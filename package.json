@@ -5,6 +5,6 @@
   "license": "MIT",
   "repository": "https://github.com/freehuntx/bomberpengu.git",
   "scripts": {
-    "start": "npx http-server public"
+    "start": "npx http-server docs"
   }
 }
