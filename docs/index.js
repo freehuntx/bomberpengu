@@ -26,7 +26,7 @@ function postprocessXML(xmlDoc) {
   return xmlStr;
 }
 
-const playerName = `Player${Math.floor(Math.random() * (99999 - 10000 + 1) + 10000)}`
+const playerName = new URLSearchParams(location.search).get('playerName') ??  `Player${Math.floor(Math.random() * (99999 - 10000 + 1) + 10000)}`
 
 window.RufflePlayer = window.RufflePlayer || {};
 
@@ -45,7 +45,7 @@ window.addEventListener('load', (event) => {
       hash: '1bf6093ea530924697ca9cebd7bf4abb',
     },
     autoplay: 'on',
-    logLevel: 'debug',
+    logLevel: new URLSearchParams(location.search).get('logLevel') ?? 'error',
     socketProxy: [
       {
         host: 'pengu.test',
