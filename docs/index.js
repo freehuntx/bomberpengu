@@ -1,3 +1,5 @@
+import { joinRoom, selfId } from 'https://cdn.skypack.dev/trystero/nostr'
+
 function preprocessXML(xmlStr) {
   // Regular expression to match tags that start with numbers
   const regex = /(<\/?)(\d+)([^>]*>)/g;
@@ -26,7 +28,11 @@ function postprocessXML(xmlDoc) {
   return xmlStr;
 }
 
+const room = joinRoom({appId: 'com.freehuntx.bomberpengu'}, 'default')
 const playerName = new URLSearchParams(location.search).get('playerName') ??  `Player${Math.floor(Math.random() * (99999 - 10000 + 1) + 10000)}`
+
+room.onPeerJoin(peer => console.log('peer joined', peer))
+// const [sendMove, getMove] = room.makeAction('mouseMove')
 
 window.RufflePlayer = window.RufflePlayer || {};
 

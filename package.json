@@ -6,5 +6,8 @@
   "repository": "https://github.com/freehuntx/bomberpengu.git",
   "scripts": {
     "start": "npx http-server docs"
+  },
+  "dependencies": {
+    "http-server": "^14.1.1"
   }
 }
