@@ -44,6 +44,7 @@ export class BomberPengu extends EventEmitter {
   constructor() {
     super()
     this.addLobbyPlayer(new LobbyPlayer("", "[Bot] Afk"))
+    this.addLobbyPlayer(new LobbyPlayer("", "[Bot] Afk 2", 1))
   }
 
   recv(data) {
