@@ -1,7 +1,5 @@
 import { BomberPengu } from './BomberPengu.js'
 
-const bomberPengu = new BomberPengu()
-
 window.RufflePlayer = window.RufflePlayer || {};
 
 window.addEventListener('load', (_event) => {
@@ -36,7 +34,100 @@ window.WebSocket = function (url, protocols) {
     return new window.oWebSocket(url, protocols);
   }
 
-  const socket = {
+  class WebSocketMock {
+    static CONNECTING = 0
+    static OPEN = 1
+    static CLOSING = 2
+    static CLOSED = 3
+    _events = new EventTarget()
+    _closed = false
+    onopen = null
+    onmessage = null
+    onclose = null
+    onerror = null
+
+    get readyState() { return this._closed ? WebSocketMock.CLOSED : WebSocketMock.OPEN }
+    get bufferedAmount() { return 0 }
+    get binaryType() { return 'blob' }
+    set binaryType(_type) {}
+    get url() { return url }
+    get protocol() {
+      return protocols
+        ? Array.isArray(protocols)
+          ? protocols.join(',')
+          : protocols
+        : '';
+    }
+
+    constructor() {
+      this.addEventListener('open', event => {
+        if (this.onopen) this.onopen(event)
+      })
+      this.addEventListener('message', event => {
+        if (this.onmessage) this.onmessage(event)
+      })
+      this.addEventListener('close', event => {
+        if (this.onclose) this.onclose(event)
+      })
+      this.addEventListener('error', event => {
+        if (this.onerror) this.onerror(event)
+      })
+
+      this.open()
+    }
+
+    addEventListener(...args) {
+      return this._events.addEventListener(...args);
+    }
+
+    removeEventListener(...args) {
+      return this._events.removeEventListener(...args);
+    }
+
+    dispatchEvent(...args) {
+      return this._events.dispatchEvent(...args);
+    }
+
+    send(data) {
+      if (this._closed) {
+        throw new Error('WebSocket is closed');
+      }
+
+      if (typeof data === "string") data = new TextEncoder().encode(data).buffer
+
+      const event = new Event('send')
+      event.data = data
+      this.dispatchEvent(event)
+    }
+
+    recv(buffer) {
+      const event = new Event('message');
+      event.data = buffer
+      this.dispatchEvent(event);
+    }
+
+    close(code, reason) {
+      this._closed = true;
+      const event = new Event('close');
+      event.code = code || 1000;
+      event.reason = reason || '';
+      this.dispatchEvent(event);
+    }
+
+    open() {
+      setTimeout(() => {
+        const event = new Event('open');
+        this.dispatchEvent(event);
+      }, 10);
+    }
+  }
+
+  const socket = new WebSocketMock()
+  const bomberPengu = new BomberPengu(socket)
+
+  return socket
+
+  /*const socket = {
     _events: new EventTarget(),
     _closed: false,
     _sentMessages: [],
@@ -113,5 +204,5 @@ window.WebSocket = function (url, protocols) {
     socket.recv(data)
   })
 
-  return socket;
+  return socket;*/
 };

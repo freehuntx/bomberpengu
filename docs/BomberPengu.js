@@ -1,5 +1,4 @@
 import { joinRoom, selfId } from 'https://cdn.skypack.dev/trystero/nostr'
-import { EventEmitter } from "./EventEmitter.js"
 
 function preprocessXML(xmlStr) {
   const regex = /(<\/?)(\d+)([^>]*>)/g;
@@ -14,6 +13,10 @@ function postprocessXML(xmlDoc) {
       return p1 + p2 + p3;
     }
   );
+}
+
+const readAttributes = (doc) => {
+  return Array.from(doc.attributes).reduce((a,e) => Object.assign(a, { [e.name]: e.value }), {})
 }
 
 class LobbyPlayer {
@@ -36,37 +39,47 @@ class LobbyPlayer {
   get skill() { return `${this.wins}/${this.loss}/${this.draw}` }
 }
 
-export class BomberPengu extends EventEmitter {
-  _lobbyRoom = null
-  _user = null
+export class BomberPengu {
+  _socket = null
   _lobbyPlayers = []
+  _game = null
+  _sendMessage = null
+  _sendUpdate = null
+
+  get localLobbyPlayer() { return this._lobbyPlayers.find(e => e.id === selfId) }
   
-  constructor() {
-    super()
-    this.addLobbyPlayer(new LobbyPlayer("", "[Bot] Afk"))
-    this.addLobbyPlayer(new LobbyPlayer("", "[Bot] Afk 2", 1))
+  constructor(socket) {
+    this._socket = socket
+
+    this._socket.addEventListener('send', event => {
+      const xml = new TextDecoder().decode(event.data).replace(/\0*$/, '')
+      this.onSendXml(xml)
+    })
   }
 
-  recv(data) {
-    data = data.replace(/\0*$/, '\0')
-    this.emit('recv', `${data}\0`)
+  async recvXml(xml, delay=0) {
+    await new Promise(resolve => setTimeout(resolve, delay))
+    const buffer = new TextEncoder().encode(xml.replace(/\0*$/, '\0')).buffer
+    this._socket.recv(buffer)
   }
 
   addLobbyPlayer(lobbyPlayer) {
+    if (this._lobbyPlayers.indexOf(lobbyPlayer) !== -1) return
+
     this._lobbyPlayers.push(lobbyPlayer)
-    this.recv(`<newPlayer name="${lobbyPlayer.name}" skill="${lobbyPlayer.skill}" state="${lobbyPlayer.state}" />`)
+    const isLocalPlayer = lobbyPlayer === this.localLobbyPlayer
+    this.recvXml(`<newPlayer name="${lobbyPlayer.name}" skill="${lobbyPlayer.skill}" state="${isLocalPlayer ? 5 : lobbyPlayer.state}" />`)
   }
 
   removeLobbyPlayer(lobbyPlayer) {
-    this._lobbyPlayers.splice(this._lobbyPlayers.indexOf(lobbyPlayer), 1)
-    this.recv(`<playerLeft name="${lobbyPlayer.name}" />`)
+    const index = this._lobbyPlayers.indexOf(lobbyPlayer)
+    if (index === -1) return
+
+    this._lobbyPlayers.splice(index, 1)
+    this.recvXml(`<playerLeft name="${lobbyPlayer.name}" />`)
   }
 
-  async onSend(data) {
-    const buffer = Array.from(new Uint8Array(data));
-    const xml = buffer.map((e) => String.fromCharCode(e)).join('').replace(/\0*$/, '');
-    if (xml[xml.length - 1] === '\0') xml = xml.slice(0, -1);
-
+  onSendXml(xml) {
     const parser = new DOMParser();
     const doc = parser.parseFromString(
       preprocessXML(xml),
@@ -78,8 +91,39 @@ export class BomberPengu extends EventEmitter {
     console.log('Send:', doc);
 
     if (doc.tagName === 'auth') {
-      const data = Array.from(doc.attributes).reduce((a,e) => Object.assign(a, { [e.name]: e.value }), {})
+      const data = readAttributes(doc)
       this.onSendAuth(data.name, data.version, data.hash)
+    }
+    else if (doc.tagName === 'challenge') {
+      const data = readAttributes(doc)
+      const lobbyPlayer = this._lobbyPlayers.find(e => e.name === data.name)
+
+      if (!lobbyPlayer) return
+      // TODO: Implement challenge logic
+    }
+    else if (doc.tagName === 'startGame') {
+      const data = readAttributes(doc)
+      this.onStartGame(data.name)
+    }
+    else if (doc.tagName === 'playAgain') {
+      this.onPlayAgain()
+    }
+    else if (doc.tagName === 'toRoom') {
+      this.onToRoom()
+    }
+    else if (doc.tagName === 'surrender') {
+      // TODO: Implement surrender logic
+    }
+    else if (doc.tagName === 'msgAll') {
+      const data = readAttributes(doc)
+      this._sendMessage({ msg: data.msg })
+    }
+    else if (doc.tagName === 'msgAll' || doc.tagName === 'msgPlayer') {
+      const data = readAttributes(doc)
+      this._sendMessage({ msg: data.msg })
+    }
+    else if (doc.tagname === 'ping') {
+      this.recvXml('<pong />')
     }
 
 
@@ -151,16 +195,19 @@ export class BomberPengu extends EventEmitter {
     }*/
   }
 
-  onSendAuth(name, version, hash) {
+  onSendAuth(name, _version, _hash) {
     this._user = { id: selfId, name }
     this._lobbyRoom = joinRoom({appId: 'com.freehuntx.bomberpengu'}, 'lobby')
 
     const [sendJoin, getJoin] = this._lobbyRoom.makeAction('join')
+    const [sendMessage, getMessage] = this._lobbyRoom.makeAction('message')
+    const [sendUpdate, getUpdate] = this._lobbyRoom.makeAction('update')
+    this._sendMessage = sendMessage
+    this._sendUpdate = sendUpdate
 
-    for (const lobbyPlayer of this._lobbyPlayers) {
-      this.recv(`<newPlayer name="${lobbyPlayer.name}" skill="${lobbyPlayer.skill}" state="${lobbyPlayer.state}" />`)
-    }
-
+    this._lobbyPlayers = []
+    this._game = null
+    this.addLobbyPlayer(new LobbyPlayer("", "[Bot] Afk", 1))
     this.addLobbyPlayer(new LobbyPlayer(selfId, name, 5))
 
     this._lobbyRoom.onPeerJoin(peerId => {
@@ -179,7 +226,57 @@ export class BomberPengu extends EventEmitter {
     })
 
     getJoin((data, peerId) => {
-      this.addLobbyPlayer(new LobbyPlayer(peerId, data.name, 2))
+      this.addLobbyPlayer(new LobbyPlayer(peerId, data.name, 0))
     })
+
+    getMessage((data, peerId) => {
+      const lobbyPlayer = this._lobbyPlayers.find(e => e.id === peerId)
+      if (!lobbyPlayer) return
+
+      if (this._game && this._game.enemy === lobbyPlayer) {
+        this.recvXml(`<msgPlayer name="${lobbyPlayer.name}" msg="${data.msg}" />`)
+      } else {
+        this.recvXml(`<msgAll name="${lobbyPlayer.name}" msg="${data.msg}" />`)
+      }
+    })
+
+    getUpdate((data, peerId) => {
+      const lobbyPlayer = this._lobbyPlayers.find(e => e.id === peerId)
+      if (!lobbyPlayer) return
+
+      lobbyPlayer.state = data.state
+      this.recvXml(`<playerUpdate name="${lobbyPlayer.name}" skill="${lobbyPlayer.skill}" state="${lobbyPlayer.state}" />`)
+    })
+  }
+
+  onStartGame(playerName) {
+    const lobbyPlayer = this._lobbyPlayers.find(e => e.name === playerName)
+    if (!lobbyPlayer) return
+
+    this._game = {
+      enemy: lobbyPlayer
+    }
+    this._sendUpdate({ state: 3 })
+  }
+
+  async onPlayAgain() {
+    if (!this._game) return
+    if (this._game.enemy.id === "") { // If is bot
+      await this.recvXml(`<startGame name="${this._game.enemy.name}" />`, 100)
+      await this.recvXml(`<16 s="${Math.floor(Math.random() * 9999)}" />`, 100)
+    }
+  }
+
+  onToRoom() {
+    if (!this._game) return
+    const { enemy } = this._game
+    
+    if (enemy.id === "") { // If is bot
+      enemy.state = 1
+      this.recvXml(`<playerUpdate name="${enemy.name}" skill="${enemy.skill}" state="${enemy.state}" />`, 100)
+      this._game = null
+    }
+
+    this._sendUpdate({ state: 0 })
   }
 }
