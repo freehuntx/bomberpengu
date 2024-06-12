@@ -12,7 +12,7 @@ window.addEventListener('load', (_event) => {
     parameters: {
       surl: 'pengu.test',
       sport: 1234,
-      sound: 0,
+      sound: 1,
       user: new URLSearchParams(location.search).get('playerName') ??  `Player${Math.floor(Math.random() * (99999 - 10000 + 1) + 10000)}`,
       hash: '1bf6093ea530924697ca9cebd7bf4abb',
     },
