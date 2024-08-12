@@ -1,4 +1,4 @@
-import { joinRoom, selfId } from 'https://cdn.skypack.dev/trystero/nostr'
+import { joinRoom, selfId } from 'https://cdn.skypack.dev/trystero@0.18.0/nostr'
 
 function preprocessXML(xmlStr) {
   const regex = /(<\/?)(\d+)([^>]*>)/g;
