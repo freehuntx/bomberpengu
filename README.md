@@ -1,6 +1,14 @@
 # BomberPengu
 This is a project to revive the old BomberPengu swf game. With online multiplayer functionality!
 
+## Status
+| Name    | Status |
+| -------- | ------- |
+| See other players in lobby list  | Works    |
+| Chat with other players in lobby | Works    |
+| Play against bot (freestyle)    | Works    |
+| Play against other playery   | Works not (yet)    |
+
 ## Play
 Visit https://freehuntx.github.io/bomberpengu to play the game
 
