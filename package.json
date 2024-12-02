@@ -1,13 +1,26 @@
 {
   "name": "bomberpengu",
   "version": "0.0.1",
-  "author": "freehuntx <freehuntx@web.de>",
+  "author": "FreehuntX",
   "license": "MIT",
   "repository": "https://github.com/freehuntx/bomberpengu.git",
+  "private": true,
+  "type": "module",
   "scripts": {
-    "start": "http-server docs"
+    "dev": "vite --force",
+    "start": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
   },
   "dependencies": {
-    "http-server": "^14.1.1"
+    "@ruffle-rs/ruffle": "^0.1.0-nightly.2024.12.2",
+    "events": "^3.3.0",
+    "fast-xml-parser": "^4.5.0",
+    "trystero": "^0.20.0"
+  },
+  "devDependencies": {
+    "@types/events": "^3.0.3",
+    "typescript": "^5.7.2",
+    "vite": "^6.0.2"
   }
 }
