@@ -42,6 +42,11 @@ new MpRuffle({
           disconnect('Connecting failed!')
         }
 
+        const motd = new URLSearchParams(location.search).get('motd')
+        if (motd) {
+          socket.send(`<msgAll name="System" msg="${motd}" />\0`)
+        }
+
         lobby.on('xml', (xml: string) => {
           xml = xml.replace(/\0*$/, '\0').replace(/(<[ \t/]*)Tag(\d)/g, '$1$2')
           xml = xml.replace(/\n\0$/g, '\0')

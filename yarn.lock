@@ -1128,10 +1128,10 @@
   resolved "https://registry.yarnpkg.com/@rollup/rollup-win32-x64-msvc/-/rollup-win32-x64-msvc-4.27.4.tgz#67d516613c9f2fe42e2d8b78e252d0003179d92c"
   integrity sha512-3j4jx1TppORdTAoBJRd+/wJRGCPC0ETWkXOecJ6PPZLj6SptXkrXcNqdj0oclbKML6FkQltdz7bBA3rUSirZug==
 
-"@ruffle-rs/ruffle@^0.1.0-nightly.2024.12.2":
-  version "0.1.0-nightly.2024.12.2"
-  resolved "https://registry.yarnpkg.com/@ruffle-rs/ruffle/-/ruffle-0.1.0-nightly.2024.12.2.tgz#4d4012d7c3a7894a2412d3abe55d83f2ba524d6b"
-  integrity sha512-RUld1W72UsLOrU/4znB+8SWz8u6ZPWfYrbMStWFWexWnlXTsXxE3tfiP+CmgHoAzvcl7Z9hnvL866SmKfVLO6g==
+"@ruffle-rs/ruffle@^0.1.0-nightly.2024.12.5":
+  version "0.1.0-nightly.2024.12.5"
+  resolved "https://registry.npmjs.org/@ruffle-rs/ruffle/-/ruffle-0.1.0-nightly.2024.12.5.tgz#283569053aaf74ed20f143ba4608e7334f1cfe16"
+  integrity sha512-zjPyWJen0V/PnI2EdDGjLyTP1uCEFopxaMpKQ7Gf2nUOMKzh2S5WQGLs2/Pgq5hg5pGyXlLm/siOyKX+wdJ16A==
 
 "@sindresorhus/fnv1a@^3.1.0":
   version "3.1.0"
@@ -2676,10 +2676,10 @@ uuid@^9.0.0:
   resolved "https://registry.npmjs.org/uuid/-/uuid-9.0.1.tgz#e188d4c8853cc722220392c424cd637f32293f30"
   integrity sha512-b+1eJOlsR9K8HJpow9Ok3fiWOWSIcIzXodvv0rQjVoOVNpWMpxf1wZNpt4y9h10odCNrqnYp1OBzRktckBe3sA==
 
-vite@^6.0.2:
-  version "6.0.2"
-  resolved "https://registry.yarnpkg.com/vite/-/vite-6.0.2.tgz#7a22630c73c7b663335ddcdb2390971ffbc14993"
-  integrity sha512-XdQ+VsY2tJpBsKGs0wf3U/+azx8BBpYRHFAyKm5VeEZNOJZRB63q7Sc8Iup3k0TrN3KO6QgyzFf+opSbfY1y0g==
+vite@^6.0.3:
+  version "6.0.3"
+  resolved "https://registry.npmjs.org/vite/-/vite-6.0.3.tgz#cc01f403e326a9fc1e064235df8a6de084c8a491"
+  integrity sha512-Cmuo5P0ENTN6HxLSo6IHsjCLn/81Vgrp81oaiFFMRa8gGDj5xEjIcEpf2ZymZtZR8oU0P2JX5WuUp/rlXcHkAw==
   dependencies:
     esbuild "^0.24.0"
     postcss "^8.4.49"
