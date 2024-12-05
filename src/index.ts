@@ -44,7 +44,12 @@ new MpRuffle({
 
         const motd = new URLSearchParams(location.search).get('motd')
         if (motd) {
-          socket.send(`<msgAll name="System" msg="${motd}" />\0`)
+          if (motd.split(':').length > 1) {
+            const [name, msg] = motd.split(':')
+            socket.send(`<msgAll name="${name}" msg="${msg}" />\0`)
+          } else {
+            socket.send(`<msgAll name="System" msg="${motd}" />\0`)
+          }
         }
 
         lobby.on('xml', (xml: string) => {
