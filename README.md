@@ -1,3 +1,14 @@
+# This project is obsolete! Visit: https://github.com/freehuntx/flashback
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+
 # BomberPengu
 This is a project to revive the old BomberPengu swf game. With online multiplayer functionality!
 
